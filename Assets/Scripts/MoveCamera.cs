@@ -4,7 +4,7 @@ public class CameraController : MonoBehaviour
 {
     public float moveSpeed = 5f; // 摄像机移动速度
     public float sensitivity = 2f; // 鼠标灵敏度
-    public float jumpSpeed = 5f; // 上升速度
+    public float liftSpeed = 5f; // 上升速度
 
     private float rotationX = 0f;
     private bool isJumping = false;
@@ -48,7 +48,7 @@ public class CameraController : MonoBehaviour
         // 如果正在上升，则向上移动摄像机
         if (isJumping)
         {
-            transform.position += Vector3.up * jumpSpeed * Time.deltaTime;
+            transform.position += Vector3.up * liftSpeed * Time.deltaTime;
         }
     }
 }
