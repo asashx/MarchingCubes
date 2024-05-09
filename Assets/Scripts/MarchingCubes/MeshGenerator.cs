@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.Rendering;
 
 [ExecuteInEditMode]
-public class MeshGenrator : MonoBehaviour
+public class MeshGenerator : MonoBehaviour
 {
     const int threadGroupSize = 8; // 线程组大小
 
