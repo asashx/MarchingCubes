@@ -39,7 +39,7 @@ public class MeshGenerator : MonoBehaviour
     {
         if (Application.isPlaying)
         {
-            InitChunkStrutures(); // 初始化分块结构
+            InitChunkStructures(); // 初始化分块结构
 
             // 销毁旧的分块
             var oldChunks = FindObjectsOfType<Chunk>(); 
@@ -102,7 +102,7 @@ public class MeshGenerator : MonoBehaviour
 #endregion
 
 #region Chunk Related
-    void InitChunkStrutures()
+    void InitChunkStructures()
     {
         // 初始化分块结构
         chunks = new List<Chunk>();
@@ -120,8 +120,11 @@ public class MeshGenerator : MonoBehaviour
         // 创建分块持有者
         if (chunkHolder == null)
         {
-            chunkHolder = GameObject.Find(chunkHolderName);
-            if (chunkHolder == null)
+            if (GameObject.Find(chunkHolderName))
+            {
+                chunkHolder = GameObject.Find(chunkHolderName);
+            }
+            else
             {
                 chunkHolder = new GameObject(chunkHolderName);
             }
@@ -171,7 +174,7 @@ public class MeshGenerator : MonoBehaviour
         // 回收多余的分块
         foreach (Chunk oldChunk in oldChunks)
         {
-            oldChunk.Destroy();
+            oldChunk.DestroyChunk();
         }
     }
 
@@ -209,7 +212,7 @@ public class MeshGenerator : MonoBehaviour
 
         // 设置计算着色器参数
         triangleBuffer.SetCounterValue(0);
-        shader.SetBuffer(0, "poinsts", pointBuffer);
+        shader.SetBuffer(0, "points", pointBuffer);
         shader.SetBuffer(0, "triangles", triangleBuffer);
         shader.SetInt("numPointsPerAxis", numPointsPerAxis);
         shader.SetFloat("isoLevel", isoLevel);

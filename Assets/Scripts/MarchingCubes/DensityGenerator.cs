@@ -31,6 +31,7 @@ public class DensityGenerator : MonoBehaviour {
 
     public ComputeBuffer Generate (ComputeBuffer pointsBuffer, int numPointsPerAxis, float boundsSize, Vector3 worldBounds, Vector3 centre, Vector3 offset, float spacing) 
     {
+        buffersToRelease = new List<ComputeBuffer> ();
         // 噪声参数
         var prng = new System.Random (seed); // 伪随机数生成器
         var offsets = new Vector3[numOctaves]; // 偏移量

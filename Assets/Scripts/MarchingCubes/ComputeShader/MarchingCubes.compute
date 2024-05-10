@@ -1,14 +1,81 @@
-// Each #kernel tells which function to compile; you can have many kernels
-#pragma kernel CSMain
+#pragma kernel March
+#include "MarchTables.compute"
 
-// Create a RenderTexture with enableRandomWrite flag and set it
-// with cs.SetTexture
-RWTexture2D<float4> Result;
+static const int numThreads = 8;
 
-[numthreads(8,8,1)]
-void CSMain (uint3 id : SV_DispatchThreadID)
+struct Triangle
 {
-    // TODO: insert actual code here!
+    float3 v2;
+    float3 v1;
+    float3 v0;
+};
 
-    Result[id.xy] = float4(id.x & id.y, (id.x & 15)/15.0, (id.y & 15)/15.0, 0.0);
+AppendStructuredBuffer<Triangle> triangles;
+RWStructuredBuffer<float4> points; // x, y, z, density
+
+int numPointsPerAxis;
+float isoLevel; // 等值面
+
+// 插值计算三角形顶点
+float3 lerp(float4 a, float4 b)
+{
+    float t = (isoLevel - a.w) / (b.w - a.w);
+    return a.xyz + t * (b.xyz - a.xyz);
+}
+
+// 坐标索引
+int indexFromCoord(int3 coord)
+{
+    return coord.x + coord.y * numPointsPerAxis + coord.z * numPointsPerAxis * numPointsPerAxis;
+}
+
+// Marching Cubes
+[numthreads(numThreads, numThreads, numThreads)]
+void March (int3 id : SV_DispatchThreadID)
+{
+    // 判断是否越界
+    if (id.x >= numPointsPerAxis - 1 || id.y >= numPointsPerAxis - 1 || id.z >= numPointsPerAxis - 1)
+        return;
+
+    // 根据索引获取八个顶点
+    float4 cubeCorners[8] = 
+    {
+        points[indexFromCoord(id + int3(0, 0, 0))],
+        points[indexFromCoord(id + int3(1, 0, 0))],
+        points[indexFromCoord(id + int3(1, 0, 1))],
+        points[indexFromCoord(id + int3(0, 0, 1))],
+        points[indexFromCoord(id + int3(0, 1, 0))],
+        points[indexFromCoord(id + int3(1, 1, 0))],
+        points[indexFromCoord(id + int3(1, 1, 1))],
+        points[indexFromCoord(id + int3(0, 1, 1))]
+    };
+    
+    // 计算体素索引（案例值）
+    int cubeIndex = 0;
+    for (int cor = 0; cor < 8; cor++)
+    {
+        if (cubeCorners[cor].w < isoLevel)
+            cubeIndex |= 1 << cor;
+    }
+    
+    // 根据案例值获取三角形
+    for (int i = 0; triangulation[cubeIndex][i] != -1; i += 3)
+    {
+        // 获取计算插值所需体素顶点索引
+        int a0 = cornerIndexAFromEdge[triangulation[cubeIndex][i]];
+        int b0 = cornerIndexBFromEdge[triangulation[cubeIndex][i]];
+
+        int a1 = cornerIndexAFromEdge[triangulation[cubeIndex][i + 1]];
+        int b1 = cornerIndexBFromEdge[triangulation[cubeIndex][i + 1]];
+
+        int a2 = cornerIndexAFromEdge[triangulation[cubeIndex][i + 2]];
+        int b2 = cornerIndexBFromEdge[triangulation[cubeIndex][i + 2]];
+
+        // 计算三角形顶点
+        Triangle tri;
+        tri.v0 = lerp(cubeCorners[a0], cubeCorners[b0]);
+        tri.v1 = lerp(cubeCorners[a1], cubeCorners[b1]);
+        tri.v2 = lerp(cubeCorners[a2], cubeCorners[b2]);
+        triangles.Append(tri);
+    }
 }

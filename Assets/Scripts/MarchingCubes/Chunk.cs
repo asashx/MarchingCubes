@@ -11,7 +11,7 @@ public class Chunk : MonoBehaviour
     MeshFilter meshFilter;
     MeshRenderer meshRenderer;
 
-    public void Destroy()
+    public void DestroyChunk()
     {
         if (Application.isPlaying)
         {
@@ -25,11 +25,11 @@ public class Chunk : MonoBehaviour
 
     public void SetUp(Material material)
     {
-        meshFilter = gameObject.AddComponent<MeshFilter>();
-        meshRenderer = gameObject.AddComponent<MeshRenderer>();
+        meshFilter = GetComponent<MeshFilter>();
+        meshRenderer = GetComponent<MeshRenderer>();
 
-        if (meshFilter == null) meshFilter = gameObject.GetComponent<MeshFilter>();
-        if (meshRenderer == null) meshRenderer = gameObject.GetComponent<MeshRenderer>();
+        if (meshFilter == null) meshFilter = gameObject.AddComponent<MeshFilter>();
+        if (meshRenderer == null) meshRenderer = gameObject.AddComponent<MeshRenderer>();
 
         mesh = meshFilter.sharedMesh;
         if (mesh == null)
